@@ -544,6 +544,9 @@ module Precious
       msg               = (params[:message].nil? or params[:message].empty?) ? "[no message]" : params[:message]
       commit_message    = { :message => msg }
       puts "====> SESSION : ", session
+      puts "====> REQUEST : ", request
+      puts "====> HEADERS : ", headers
+
       author_parameters = session['gollum.author']
       commit_message.merge! author_parameters unless author_parameters.nil?
       commit_message
