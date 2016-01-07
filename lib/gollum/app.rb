@@ -1,4 +1,6 @@
 # ~*~ encoding: utf-8 ~*~
+require 'base64'
+require 'json'
 require 'cgi'
 require 'sinatra'
 require 'gollum-lib'
@@ -66,6 +68,15 @@ module Precious
       @@min_ua.detect { |min| ua >= min }
     end
 
+    def decode_tas_payload(payload)
+      plain   = Base64.decode64(payload)
+      hash    = JSON.parse(plain)
+      first   = hash["firstName"]
+      last    = hash["lastName"]
+      email   = hash["email"]
+      session['gollum.author'] = { :name => first + " " + last, :email => email}
+    end
+
     # We want to serve public assets for now
     set :public_folder, "#{dir}/public/gollum"
     set :static, true
@@ -104,6 +115,7 @@ module Precious
       @css = settings.wiki_options[:css]
       @js  = settings.wiki_options[:js]
       @mathjax_config = settings.wiki_options[:mathjax_config]
+      decode_tas_payload(request.env["HTTP_AUTH_SERVER_PAYLOAD"])
     end
 
     get '/' do
@@ -544,8 +556,7 @@ module Precious
       msg               = (params[:message].nil? or params[:message].empty?) ? "[no message]" : params[:message]
       commit_message    = { :message => msg }
       puts "====> SESSION : ", session
-      puts "====> REQUEST : ", request
-      puts "====> HEADERS : ", headers
+      puts "====> REQUEST : ", request.inspect
 
       author_parameters = session['gollum.author']
       commit_message.merge! author_parameters unless author_parameters.nil?
