@@ -69,6 +69,7 @@ module Precious
     end
 
     def decode_tas_payload(payload)
+      return if payload.nil?
       plain   = Base64.decode64(payload)
       hash    = JSON.parse(plain)
       first   = hash["firstName"]
